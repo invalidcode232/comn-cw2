@@ -6,10 +6,10 @@ from socket import socket, AF_INET, SOCK_DGRAM, timeout
 import time
 import sys
 
-remoteHost = sys.argv[1]
+remote_host = sys.argv[1]
 port = int(sys.argv[2])
 filename = sys.argv[3]
-retry_timeout_ms = int(sys.argv[4])
+retry_timeout = int(sys.argv[4])
 
 # As specified by the requirements
 DATA_SIZE = 1024
@@ -20,10 +20,10 @@ DATA_SIZE = 1024
 sock = socket(AF_INET, SOCK_DGRAM)
 
 # Part 2: configure the socket to have timeout specified in retry_timeout_ms
-sock.settimeout(retry_timeout_ms / 1000.0)
+sock.settimeout(retry_timeout / 1000.0)
 
 print(
-    f"Sender running on port {port} and sending '{filename}' to {remoteHost}:{port}..."
+    f"Sender running on port {port} and sending '{filename}' to {remote_host}:{port}..."
 )
 
 # Keep track of our sequence number
@@ -38,7 +38,7 @@ timer_end = None
 retransmissions = 0
 
 # Keep track of bytes read
-total_bytes_read = 0
+total_data_bytes = 0
 
 try:
     with open(filename, "rb") as f:
@@ -46,7 +46,7 @@ try:
         cur_chunk = f.read(DATA_SIZE)
 
         while cur_chunk:
-            total_bytes_read += len(cur_chunk)
+            total_data_bytes += len(cur_chunk)
 
             # Check if we have reached the end of the file for this chunk
             next_chunk = f.read(DATA_SIZE)
@@ -73,13 +73,16 @@ try:
                 timer_start = time.time()
 
             while not ack_received:
-                sock.sendto(packet, (remoteHost, port))
+                sock.sendto(packet, (remote_host, port))
                 try:
                     ack_data, _ = sock.recvfrom(
                         2
                     )  # Expecting a 2-byte ACK with seq number
 
-                    if int.from_bytes(ack_data, byteorder="big") == seq_num % 65536:
+                    if (
+                        int.from_bytes(ack_data, byteorder="big") % 65536
+                        == seq_num % 65536
+                    ):
                         ack_received = True
 
                         if eof_flag == 1:
@@ -102,13 +105,15 @@ try:
             # time.sleep(SLEEP_TIME) # Sleep to simulate bandwidth limit
 except FileNotFoundError:
     print(f"File '{filename}' not found.")
+    sys.exit()
 except Exception as e:
     print(f"An error occurred: {e}")
+    sys.exit()
 
 # Calculate metrics and output it
 if timer_start is not None and timer_end is not None:
     transfer_time = timer_end - timer_start
-    file_size_kb = total_bytes_read / DATA_SIZE  # Convert bytes to KB
+    file_size_kb = total_data_bytes / DATA_SIZE  # Convert bytes to KB
     throughput = file_size_kb / transfer_time if transfer_time > 0 else 0
 
     # Strict single-line output: <retransmissions> <throughput_in_KB/s>

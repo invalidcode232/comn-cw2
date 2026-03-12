@@ -79,7 +79,7 @@ try:
                             2
                         )  # Expecting a 2-byte ACK with seq number
 
-                        if ack_data == seq_num % 65536:
+                        if int.from_bytes(ack_data, byteorder="big") == seq_num % 65536:
                             ack_received = True
 
                             if eof_flag == 1:

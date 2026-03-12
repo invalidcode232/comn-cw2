@@ -79,17 +79,15 @@ try:
                         2
                     )  # Expecting a 2-byte ACK with seq number
 
-                    if (
-                        int.from_bytes(ack_data, byteorder="big") % 65536
-                        == seq_num % 65536
-                    ):
+                    received_seq_num = int.from_bytes(ack_data, byteorder="big") % 65536
+                    if received_seq_num == seq_num % 65536:
                         ack_received = True
 
                         if eof_flag == 1:
                             timer_end = time.time()
                     else:
                         print(
-                            f"Unexpected ACK received: {ack_data}. Expected: {seq_num % 65536}"
+                            f"Unexpected ACK received: {received_seq_num}. Expected: {seq_num % 65536}"
                         )
                 except timeout as te:
                     print(

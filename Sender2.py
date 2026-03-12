@@ -89,7 +89,7 @@ try:
                             timer_end = time.time()
                     else:
                         pass
-                except timeout as te:
+                except timeout as _:
                     print(
                         f"Retransmission timeout for packet with sequence number {seq_num % 65536}. Retransmitting..."
                     )

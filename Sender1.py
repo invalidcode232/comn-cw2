@@ -45,7 +45,7 @@ try:
 
                 seq_num += 1
                 cur_chunk = next_chunk
-                time.sleep(SLEEP_TIME) # Sleep to simulate bandwidth limit
+                # time.sleep(SLEEP_TIME) # Sleep to simulate bandwidth limit
 
 except FileNotFoundError:
     print(f"File '{filename}' not found.")

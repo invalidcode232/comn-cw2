@@ -1,9 +1,9 @@
+# Forename: James
+# Surname: Sungarda
+# Matriculation Number: s2930228
+#
 import sys
 import socket
-
-# python3 Receiver2.py <Port> <Filename>
-if len(sys.argv) != 3:
-    sys.exit("Usage: python3 Receiver2.py <Port> <Filename>")
 
 port = int(sys.argv[1])
 filename = sys.argv[2]

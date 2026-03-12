@@ -5,10 +5,6 @@
 import sys
 from socket import socket, AF_INET, SOCK_DGRAM
 
-# python3 Receiver3.py <Port> <Filename>
-if len(sys.argv) != 3:
-    sys.exit()
-
 port = int(sys.argv[1])
 filename = sys.argv[2]
 

@@ -42,64 +42,64 @@ total_bytes_read = 0
 
 try:
     with open(filename, "rb") as f:
-        while True:  # Read a chunk of the file, break when we reach the end
-            cur_chunk = f.read(DATA_SIZE)
+        # while True:  # Read a chunk of the file, break when we reach the end
+        cur_chunk = f.read(DATA_SIZE)
 
-            while cur_chunk:
-                total_bytes_read = len(cur_chunk)
+        while cur_chunk:
+            total_bytes_read = len(cur_chunk)
 
-                # Check if we have reached the end of the file for this chunk
-                next_chunk = f.read(DATA_SIZE)
-                eof_flag = 1 if not next_chunk else 0
+            # Check if we have reached the end of the file for this chunk
+            next_chunk = f.read(DATA_SIZE)
+            eof_flag = 1 if not next_chunk else 0
 
-                # Define header
-                header = (seq_num % 65536).to_bytes(
-                    2, byteorder="big"
-                )  # 3-byte header for sequence number
-                header += eof_flag.to_bytes(
-                    1, byteorder="big"
-                )  # 1-byte header for EOF flag
+            # Define header
+            header = (seq_num % 65536).to_bytes(
+                2, byteorder="big"
+            )  # 3-byte header for sequence number
+            header += eof_flag.to_bytes(
+                1, byteorder="big"
+            )  # 1-byte header for EOF flag
 
-                packet = header + cur_chunk
+            packet = header + cur_chunk
 
-                # In part 1, we would send the packet here
-                # sock.sendto(packet, (remoteHost, port))
+            # In part 1, we would send the packet here
+            # sock.sendto(packet, (remoteHost, port))
 
-                # Part 2: Stop and wait
-                ack_received = False
+            # Part 2: Stop and wait
+            ack_received = False
 
-                # Start timer if it hasn't started yet
-                if timer_start is None:
-                    timer_start = time.time()
+            # Start timer if it hasn't started yet
+            if timer_start is None:
+                timer_start = time.time()
 
-                while not ack_received:
-                    sock.sendto(packet, (remoteHost, port))
-                    try:
-                        ack_data, _ = sock.recvfrom(
-                            2
-                        )  # Expecting a 2-byte ACK with seq number
+            while not ack_received:
+                sock.sendto(packet, (remoteHost, port))
+                try:
+                    ack_data, _ = sock.recvfrom(
+                        2
+                    )  # Expecting a 2-byte ACK with seq number
 
-                        if int.from_bytes(ack_data, byteorder="big") == seq_num % 65536:
-                            ack_received = True
+                    if int.from_bytes(ack_data, byteorder="big") == seq_num % 65536:
+                        ack_received = True
 
-                            if eof_flag == 1:
-                                timer_end = time.time()
-                        else:
-                            print(
-                                f"Unexpected ACK received: {ack_data}. Expected: {seq_num % 65536}"
-                            )
-                    except timeout as te:
+                        if eof_flag == 1:
+                            timer_end = time.time()
+                    else:
                         print(
-                            f"Timeout waiting for ACK for sequence number {seq_num - 1}. Resending packet | err: {te}"
+                            f"Unexpected ACK received: {ack_data}. Expected: {seq_num % 65536}"
                         )
-                        retransmissions += 1
-                    except Exception as e:
-                        print(f"Err: {e}")
+                except timeout as te:
+                    print(
+                        f"Timeout waiting for ACK for sequence number {seq_num - 1}. Resending packet | err: {te}"
+                    )
+                    retransmissions += 1
+                except Exception as e:
+                    print(f"Err: {e}")
 
-                # Package sent and received
-                seq_num += 1
-                cur_chunk = next_chunk
-                # time.sleep(SLEEP_TIME) # Sleep to simulate bandwidth limit
+            # Package sent and received
+            seq_num += 1
+            cur_chunk = next_chunk
+            # time.sleep(SLEEP_TIME) # Sleep to simulate bandwidth limit
 except FileNotFoundError:
     print(f"File '{filename}' not found.")
 except Exception as e:

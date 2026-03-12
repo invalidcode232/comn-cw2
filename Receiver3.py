@@ -5,6 +5,9 @@
 import sys
 from socket import socket, AF_INET, SOCK_DGRAM
 
+DATA_SIZE = 1024
+HEADER_SIZE = 3
+
 port = int(sys.argv[1])
 filename = sys.argv[2]
 
@@ -15,7 +18,7 @@ expected_seq = 0
 
 with open(filename, "wb") as f:
     while True:
-        msg, addr = sock.recvfrom(1027)
+        msg, addr = sock.recvfrom(DATA_SIZE + HEADER_SIZE)
 
         seq_num = int.from_bytes(msg[0:2], byteorder="big")
         eof_flag = int.from_bytes(msg[2:3], byteorder="big")

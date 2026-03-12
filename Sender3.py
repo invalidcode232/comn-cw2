@@ -7,38 +7,46 @@ import time
 import select
 from socket import socket, AF_INET, SOCK_DGRAM
 
+# As specified by the requirements
+DATA_SIZE = 1024
+
 remote_host = sys.argv[1]
 port = int(sys.argv[2])
 filename = sys.argv[3]
 retry_timeout = float(sys.argv[4]) / 1000.0
 window_size = int(sys.argv[5])
 
-# As specified by the requirements
-DATA_SIZE = 1024
-
 sock = socket(AF_INET, SOCK_DGRAM)
 
-# Pre-read the entire file into packet chunks for easier window management
-packets = []
+packets = []  # For storing the packets read beforehand
 total_data_bytes = 0
 
+seq_num = 0
+
+# Pre-read the entire file into packet chunks for easier window management
 try:
     with open(filename, "rb") as f:
-        chunk = f.read(DATA_SIZE)
-        seq_num = 0
-        while chunk:
-            total_data_bytes += len(chunk)
+        cur_chunk = f.read(DATA_SIZE)
+
+        while cur_chunk:
+            total_data_bytes += len(cur_chunk)
             next_chunk = f.read(DATA_SIZE)
             eof_flag = 1 if not next_chunk else 0
 
+            # Define header
             header = (seq_num % 65536).to_bytes(2, byteorder="big")
             header += eof_flag.to_bytes(1, byteorder="big")
 
-            packets.append(header + chunk)
-            chunk = next_chunk
+            packet = header + cur_chunk
+            packets.append(packet)
+
+            cur_chunk = next_chunk
             seq_num += 1
 except FileNotFoundError:
     print(f"File '{filename}' not found.")
+    sys.exit()
+except Exception as e:
+    print(f"An error occurred: {e}")
     sys.exit()
 
 # Part 3: GBN Variables

@@ -42,7 +42,7 @@ total_data_bytes = 0
 
 try:
     with open(filename, "rb") as f:
-        # while True:  # Read a chunk of the file, break when we reach the end
+        # Read a chunk of data of size specified by DATA_SIZE
         cur_chunk = f.read(DATA_SIZE)
 
         while cur_chunk:

@@ -37,6 +37,10 @@ try:
             chunk = next_chunk
             seq_num += 1
 except FileNotFoundError:
+    print(f"File '{filename}' not found.")
+    sys.exit()
+except Exception as e:
+    print(f"An error occurred: {e}")
     sys.exit()
 
 total_packets = len(packets)

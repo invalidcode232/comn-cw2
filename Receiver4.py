@@ -6,6 +6,7 @@ import sys
 from socket import socket, AF_INET, SOCK_DGRAM
 
 DATA_SIZE = 1024
+HEADER_SIZE = 3
 
 port = int(sys.argv[1])
 filename = sys.argv[2]
@@ -19,7 +20,7 @@ buffer = {}
 
 with open(filename, "wb") as f:
     while True:
-        msg, addr = sock.recvfrom(DATA_SIZE + 3)
+        msg, addr = sock.recvfrom(DATA_SIZE + DATA_SIZE)
 
         seq_num = int.from_bytes(msg[0:2], byteorder="big")
         eof_flag = int.from_bytes(msg[2:3], byteorder="big")
@@ -46,7 +47,7 @@ with open(filename, "wb") as f:
                     sock.settimeout(1.0)
                     try:
                         while True:
-                            msg, addr = sock.recvfrom(DATA_SIZE + 3)
+                            msg, addr = sock.recvfrom(DATA_SIZE + HEADER_SIZE)
                             resend_seq = msg[0:2]
                             sock.sendto(resend_seq, addr)
                     except Exception:
@@ -55,7 +56,6 @@ with open(filename, "wb") as f:
                     sys.exit()
 
                 rcv_base += 1
-
         else:
             # The packet is outside our window. It is likely an old packet whose
             # ACK was lost. We MUST re-ACK it so the sender's timer stops.

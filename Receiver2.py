@@ -1,38 +1,42 @@
-# Forename: James
-# Surname: Sungarda
-# Matriculation Number: s2930228
-
-from socket import socket, AF_INET, SOCK_DGRAM
 import sys
+import socket
+
+# python3 Receiver2.py <Port> <Filename>
+if len(sys.argv) != 3:
+    sys.exit("Usage: python3 Receiver2.py <Port> <Filename>")
 
 port = int(sys.argv[1])
 filename = sys.argv[2]
 
-IP = "127.0.0.1"
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# Bind to all interfaces (empty string) so it works with localhost or real IPs
+sock.bind(("", port))
 
-sock = socket(AF_INET, SOCK_DGRAM)
-sock.bind((IP, port))
-
-print(f"Receiver running on port {port} and waiting for '{filename}'...")
+expected_seq_num = 0
+MAX_PACKET_SIZE = 1027
 
 with open(filename, "wb") as f:
     while True:
-        packet, addr = sock.recvfrom(1027)  # Receive a packet (header + data)
+        message, addr = sock.recvfrom(MAX_PACKET_SIZE)
 
-        if not packet:
+        # Deconstruct header
+        seq_num = int.from_bytes(message[0:2], byteorder="big")
+        eof_flag = int.from_bytes(message[2:3], byteorder="big")
+        data = message[3:]
+
+        # If it is the expected packet, write it and advance our expected number
+        if seq_num == expected_seq_num:
+            f.write(data)
+            expected_seq_num = (expected_seq_num + 1) % 65536
+
+        # Send a 2-byte ACK echoing the received sequence number.
+        # Note: If it was a duplicate, this safely ACKs the duplicate so the
+        # sender knows it can stop retransmitting it and move on.
+        ack_msg = seq_num.to_bytes(2, byteorder="big")
+        sock.sendto(ack_msg, addr)
+
+        # Stop listening if we successfully processed the EOF packet
+        if eof_flag == 1 and seq_num == (expected_seq_num - 1) % 65536:
             break
 
-        # Extract header information
-        seq_num = int.from_bytes(
-            packet[0:2], byteorder="big"
-        )  # Sequence number from first 2 bytes
-        eof_flag = packet[2]  # EOF flag from the next byte
-        data = packet[3:]  # Data starts from the 4th byte
-
-        print(f"Received packet with sequence number {seq_num} and EOF flag {eof_flag}")
-
-        f.write(data)  # Write the data to the file
-
-        if eof_flag == 1:  # If EOF flag is set, we are done
-            print("End of file received.")
-            break
+sock.close()

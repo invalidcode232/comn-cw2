@@ -9,6 +9,7 @@ import sys
 remoteHost = sys.argv[1]
 port = int(sys.argv[2])
 filename = sys.argv[3]
+retry_timeout_ms = int(sys.argv[4])
 
 # As specified by the requirements
 DATA_SIZE = 1024
@@ -18,6 +19,9 @@ DATA_SIZE = 1024
 
 sock = socket(AF_INET, SOCK_DGRAM)
 
+# Part 2: configure the socket to have timeout specified in retry_timeout_ms
+sock.settimeout(retry_timeout_ms / 1000.0)
+
 print(
     f"Sender running on port {port} and sending '{filename}' to {remoteHost}:{port}..."
 )
@@ -25,7 +29,7 @@ print(
 # Keep track of our sequence number
 seq_num = 0
 
-# Variables for part 2
+# Part 2: Variables for metrics calculation
 # Keep track of timer
 timer_start = None
 timer_end = None
@@ -80,6 +84,10 @@ try:
 
                             if eof_flag == 1:
                                 timer_end = time.time()
+                        else:
+                            print(
+                                f"Unexpected ACK received: {ack_data}. Expected: {seq_num % 65536}"
+                            )
                     except timeout as te:
                         print(
                             f"Timeout waiting for ACK for sequence number {seq_num - 1}. Resending packet | err: {te}"
@@ -92,7 +100,6 @@ try:
                 seq_num += 1
                 cur_chunk = next_chunk
                 # time.sleep(SLEEP_TIME) # Sleep to simulate bandwidth limit
-
 except FileNotFoundError:
     print(f"File '{filename}' not found.")
 except Exception as e:

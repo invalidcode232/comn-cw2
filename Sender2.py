@@ -107,7 +107,7 @@ except Exception as e:
 
 # Calculate metrics and output it
 if timer_start is not None and timer_end is not None:
-    transfer_time = timer_start - timer_end
+    transfer_time = timer_end - timer_start
     file_size_kb = total_bytes_read / DATA_SIZE  # Convert bytes to KB
     throughput = file_size_kb / transfer_time if transfer_time > 0 else 0
 

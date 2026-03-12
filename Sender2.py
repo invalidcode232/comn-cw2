@@ -90,6 +90,9 @@ try:
                     else:
                         pass
                 except timeout as te:
+                    print(
+                        f"Retransmission timeout for packet with sequence number {seq_num % 65536}. Retransmitting..."
+                    )
                     retransmissions += 1
                     sock.sendto(packet, (remote_host, port))
                 except Exception as e:

@@ -2,8 +2,8 @@
 # Surname: Sungarda
 # Matriculation Number: s2930228
 
-from socket import socket, AF_INET, SOCK_DGRAM
 import sys
+from socket import socket, AF_INET, SOCK_DGRAM
 
 DATA_SIZE = 1024
 HEADER_SIZE = 3

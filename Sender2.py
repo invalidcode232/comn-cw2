@@ -85,6 +85,8 @@ try:
 
                         if eof_flag == 1:
                             timer_end = time.time()
+                        else:
+                            pass
                     else:
                         print(
                             f"Unexpected ACK received: {received_seq_num}. Expected: {seq_num % 65536}"
@@ -100,7 +102,6 @@ try:
             # Package sent and received
             seq_num += 1
             cur_chunk = next_chunk
-            # time.sleep(SLEEP_TIME) # Sleep to simulate bandwidth limit
 except FileNotFoundError:
     print(f"File '{filename}' not found.")
     sys.exit()

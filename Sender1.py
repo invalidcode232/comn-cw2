@@ -2,8 +2,7 @@
 # Surname: Sungarda
 # Matriculation Number: s2930228
 
-from socket import *
-import time
+from socket import socket, AF_INET, SOCK_DGRAM
 import sys
 
 remoteHost = sys.argv[1]
@@ -18,14 +17,16 @@ DATA_SIZE = 1024
 
 sock = socket(AF_INET, SOCK_DGRAM)
 
-print(f"Sender running on port {port} and sending '{filename}' to {remoteHost}:{port}...")
+print(
+    f"Sender running on port {port} and sending '{filename}' to {remoteHost}:{port}..."
+)
 
 # Keep track of our sequence number
 seq_num = 0
 
 try:
     with open(filename, "rb") as f:
-        while True: # Read a chunk of the file, break when we reach the end
+        while True:  # Read a chunk of the file, break when we reach the end
             cur_chunk = f.read(DATA_SIZE)
 
             while cur_chunk:
@@ -34,14 +35,20 @@ try:
                 eof_flag = 1 if not next_chunk else 0
 
                 # Define header
-                header = (seq_num % 65536).to_bytes(2, byteorder='big') # 3-byte header for sequence number
-                header += eof_flag.to_bytes(1, byteorder='big') # 1-byte header for EOF flag
+                header = (seq_num % 65536).to_bytes(
+                    2, byteorder="big"
+                )  # 3-byte header for sequence number
+                header += eof_flag.to_bytes(
+                    1, byteorder="big"
+                )  # 1-byte header for EOF flag
 
                 packet = header + cur_chunk
 
                 # Send the packet
                 sock.sendto(packet, (remoteHost, port))
-                print(f"Sent packet with sequence number {seq_num} and EOF flag {eof_flag}")
+                print(
+                    f"Sent packet with sequence number {seq_num} and EOF flag {eof_flag}"
+                )
 
                 seq_num += 1
                 cur_chunk = next_chunk

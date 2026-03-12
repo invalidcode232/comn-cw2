@@ -46,7 +46,7 @@ try:
         cur_chunk = f.read(DATA_SIZE)
 
         while cur_chunk:
-            total_bytes_read = len(cur_chunk)
+            total_bytes_read += len(cur_chunk)
 
             # Check if we have reached the end of the file for this chunk
             next_chunk = f.read(DATA_SIZE)

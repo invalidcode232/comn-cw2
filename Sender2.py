@@ -68,16 +68,18 @@ try:
             # Part 2: Stop and wait
             ack_received = False
 
-            # Start timer if it hasn't started yet
+            # 1. Start timer if it hasn't started yet
             if timer_start is None:
                 timer_start = time.time()
 
+            ack_received = False
+
+            # 2. SEND THE PACKET ONCE BEFORE ENTERING THE LOOP
+            sock.sendto(packet, (remote_host, port))
+
             while not ack_received:
-                sock.sendto(packet, (remote_host, port))
                 try:
-                    ack_data, _ = sock.recvfrom(
-                        2
-                    )  # Expecting a 2-byte ACK with seq number
+                    ack_data, _ = sock.recvfrom(2)
 
                     received_seq_num = int.from_bytes(ack_data, byteorder="big") % 65536
                     if received_seq_num == seq_num % 65536:
@@ -85,20 +87,13 @@ try:
 
                         if eof_flag == 1:
                             timer_end = time.time()
-                        else:
-                            pass
                     else:
-                        print(
-                            f"Unexpected ACK received: {received_seq_num}. Expected: {seq_num % 65536}"
-                        )
+                        pass
                 except timeout as te:
-                    print(
-                        f"Timeout waiting for ACK for sequence number {seq_num - 1}. Resending packet | err: {te}"
-                    )
                     retransmissions += 1
+                    sock.sendto(packet, (remote_host, port))
                 except Exception as e:
                     print(f"Err: {e}")
-
             # Package sent and received
             seq_num += 1
             cur_chunk = next_chunk

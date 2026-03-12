@@ -1,3 +1,7 @@
+# Forename: James
+# Surname: Sungarda
+# Matriculation Number: s2930228
+
 import sys
 from socket import socket, AF_INET, SOCK_DGRAM
 
@@ -30,16 +34,18 @@ with open(filename, "wb") as f:
 
             # If this was the last packet, gracefully exit
             if eof_flag == 1:
-                # Edge case safety: Wait 1 second before fully closing in case
-                # our final ACK dropped and the sender retransmits the EOF packet.
+                # Set a 1-second timeout. If we don't hear anything for 1 second,
+                # we assume the sender got our ACK and we can safely close.
                 sock.settimeout(1.0)
                 try:
                     while True:
+                        # Wait to see if the sender retransmits the EOF packet
                         msg, addr = sock.recvfrom(1027)
+
+                        # If they do, just resend the ACK! No need to write data.
                         sock.sendto(seq_num.to_bytes(2, byteorder="big"), addr)
-                except:
-                    break  # Timeout triggered, safe to close
-                break
+                except Exception:
+                    break  # Safe to close!
         else:
             # Out-of-order or duplicate packet! Discard data and resend LAST valid ACK.
             # Example: If expecting 5 but got 6, we re-ACK 4.

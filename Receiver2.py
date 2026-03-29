@@ -36,7 +36,11 @@ with open(filename, "wb") as f:
         # Note: If it was a duplicate, this safely ACKs the duplicate so the
         # sender knows it can stop retransmitting it and move on.
         ack_msg = seq_num.to_bytes(2, byteorder="big")
-        sock.sendto(ack_msg, addr)
+        if eof_flag == 1:
+            for _ in range(20):
+                sock.sendto(ack_msg, addr)
+        else:
+            sock.sendto(ack_msg, addr)
 
         # Stop listening if we successfully processed the EOF packet
         if eof_flag == 1 and seq_num == (expected_seq - 1) % 65536:

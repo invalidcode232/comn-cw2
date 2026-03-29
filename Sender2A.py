@@ -50,8 +50,8 @@ def main():
                         if eof == 1:
                             end_time = time.time()
                         break
-                    else:
-                        retransmissions += 1
+                    # else:
+                    #     retransmissions += 1  # Modified this to show the 'true' number of retransmissions
                 except socket.timeout:
                     retransmissions += 1
                     consecutive_timeouts += 1

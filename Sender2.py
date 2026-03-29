@@ -62,17 +62,12 @@ try:
 
             packet = header + cur_chunk
 
-            # In part 1, we would send the packet here
-            # sock.sendto(packet, (remoteHost, port))
-
             # Part 2: Stop and wait
             ack_received = False
 
             # 1. Start timer if it hasn't started yet
             if timer_start is None:
                 timer_start = time.time()
-
-            ack_received = False
 
             # 2. SEND THE PACKET ONCE BEFORE ENTERING THE LOOP
             sock.sendto(packet, (remote_host, port))
@@ -89,6 +84,11 @@ try:
                             timer_end = time.time()
                     else:
                         pass
+
+                    # ack_received = True
+                    #
+                    # if eof_flag == 1:
+                    #     timer_end = time.time()
                 except timeout as _:
                     print(
                         f"Retransmission timeout for packet with sequence number {seq_num % 65536}. Retransmitting..."

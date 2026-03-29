@@ -39,3 +39,5 @@ with open(filename, "wb") as f:
         if eof_flag == 1:  # If EOF flag is set, we are done
             print("End of file received.")
             break
+
+sock.close()
